@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="robots" content="noindex,nofollow">
+<title>かんけい図をつくろう｜店ではたらく人と仕事</title>
+<!-- 小学校3年 社会科の授業で使う学習用教材です。カードの文言は教科書「店ではたらく人と仕事」
+     まとめる（かんけい図）のページをもとにしています。授業での利用のみを目的としています。 -->
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overscroll-behavior:none}
+body{
+  font-family:"UD デジタル 教科書体 NP-R","BIZ UDPGothic","Meiryo",sans-serif;
+  background:#f4f7fa;color:#16202a;
+  display:flex;flex-direction:column;height:100vh;
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;
+}
+ruby rt{font-size:.45em;font-weight:400;line-height:1}
+
+/* ===== ヘッダー ===== */
+#bar{flex:none;display:flex;align-items:center;gap:10px;padding:6px 12px;
+  background:#eaf1f8;border-bottom:4px solid #1a5fa8;flex-wrap:wrap}
+#bar .steps{display:flex;gap:6px}
+#bar .st{font:inherit;font-size:clamp(14px,1.9vw,20px);font-weight:700;
+  padding:7px 14px;border-radius:9px;border:2px solid #b9cddf;background:#fff;color:#2b4f70;cursor:pointer}
+#bar .st.on{background:#1a5fa8;color:#fff;border-color:#0d3f78}
+#bar .st.done{border-color:#2f9e5f;color:#1c7040}
+#bar .st.done::after{content:"　◎"}
+#bar .tools{margin-left:auto;display:flex;gap:6px;align-items:center}
+#bar .tools button{font:inherit;font-size:clamp(14px,1.8vw,19px);font-weight:700;
+  padding:7px 14px;border-radius:9px;border:2px solid #90aec7;background:#fff;color:#1a4470;cursor:pointer}
+#bar .tools button.pri{background:#d94b28;border-color:#a83718;color:#fff}
+#bar .tools button.tiny{font-size:12px;padding:5px 8px;border-color:#c9d4de;color:#8494a3;font-weight:400}
+
+/* ===== 画面 ===== */
+main{flex:1;min-height:0;position:relative}
+.screen{display:none;position:absolute;inset:0;padding:8px 12px 10px;overflow:auto}
+.screen.on{display:flex;flex-direction:column}
+.lead{flex:none;font-size:clamp(15px,2.1vw,22px);font-weight:700;color:#0f4f96;margin:0 0 6px}
+.lead small{font-weight:400;color:#5b6b7a;font-size:.8em;margin-left:8px}
+
+/* ===== カード ===== */
+.card{
+  flex:0 0 auto;
+  display:inline-flex;align-items:center;justify-content:center;text-align:center;
+  font-size:clamp(12px,1.5vw,17px);line-height:1.8;font-weight:700;
+  padding:6px 9px;border-radius:8px;min-height:46px;
+  border:2px solid #9aa5ae;background:#e3e7ea;color:#2a3239;
+  cursor:pointer;transition:transform .08s,box-shadow .1s;
+  width:clamp(132px,16.6vw,196px);
+  word-break:normal;overflow-wrap:break-word;
+}
+ruby{white-space:nowrap}
+.card>.t{display:block;width:100%}
+.card:active{transform:scale(.97)}
+.card.sel{outline:4px solid #ff8a00;outline-offset:2px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.card.dragging{opacity:.25}
+.card.k.col{background:#cfe2fa;border-color:#4a83c8;color:#123a66}
+.card.n.col{background:#fdf0a8;border-color:#c9a41d;color:#544400}
+.card.lock{cursor:default}
+.card.bad{animation:sh .35s}
+@keyframes sh{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.chip{width:auto;min-width:clamp(92px,11vw,130px);background:#dff0e2;border-color:#6aab7d;color:#14502c;font-size:clamp(14px,1.9vw,21px)}
+
+/* ===== プール ===== */
+.pool{flex:none;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;
+  background:#fff;border:2px dashed #b3c1cd;border-radius:10px;padding:7px;margin-bottom:8px;min-height:56px}
+.pool.small{min-height:48px;margin-bottom:6px}
+
+/* ===== ステップ1 ===== */
+.boxes{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.box{display:flex;flex-direction:column;border-radius:12px;border:3px solid #b9cddf;background:#fff;overflow:hidden}
+.box .bt{flex:none;font-size:clamp(15px,2.1vw,23px);font-weight:700;padding:5px 10px;color:#fff}
+.box.k .bt{background:#2f6fb5}.box.k{border-color:#2f6fb5}
+.box.n .bt{background:#c9a41d}.box.n{border-color:#c9a41d}
+.box .zone{flex:1;min-height:0;overflow:auto;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;padding:8px}
+
+/* ===== ステップ2・3 の表 ===== */
+.tbl{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:5px}
+.hdrow{display:grid;gap:8px;align-items:center;font-size:clamp(13px,1.8vw,20px);font-weight:700}
+.hdrow span{text-align:center;padding:3px;border-radius:7px}
+.hdrow .hk{background:#2f6fb5;color:#fff}
+.hdrow .hc{background:#5aa06f;color:#fff}
+.hdrow .hn{background:#c9a41d;color:#fff}
+.row{display:grid;gap:8px;align-items:stretch;background:#fff;border:2px solid #d3dde6;border-radius:10px;padding:5px}
+.row .side{display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:center}
+.row .arw{display:flex;align-items:center;justify-content:center;font-size:clamp(18px,2.4vw,28px);color:#5aa06f;font-weight:700}
+.zone{border:2.5px dashed #a8bccd;border-radius:9px;background:#f7fbff;min-height:50px;
+  display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:center;padding:5px}
+.zone.hot{border-color:#ff8a00;background:#fff5e6}
+.zone.ok{border-style:solid;border-color:#2f9e5f;background:#f1fbf4}
+.rowlab{display:flex;align-items:center;justify-content:center;font-size:clamp(15px,2vw,22px);
+  font-weight:700;color:#6b7a88;background:#eef3f7;border-radius:8px}
+
+#s2 .hdrow,#s2 .row{grid-template-columns:minmax(0,7fr) 46px minmax(0,4.4fr)}
+#s3 .hdrow,#s3 .row{grid-template-columns:minmax(0,6fr) minmax(0,2.4fr) minmax(0,5fr)}
+
+/* ===== トースト・ゴースト ===== */
+#msg{position:fixed;left:50%;top:52%;transform:translate(-50%,-50%) scale(.85);opacity:0;pointer-events:none;
+  background:rgba(20,30,40,.93);color:#fff;font-size:clamp(20px,3.4vw,40px);font-weight:700;
+  padding:18px 34px;border-radius:16px;z-index:99;transition:opacity .16s,transform .16s;text-align:center;line-height:1.5}
+#msg.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#msg.good{background:rgba(24,120,60,.95)}
+#msg.bad{background:rgba(170,45,25,.95)}
+#ghost{position:fixed;z-index:100;pointer-events:none;display:none;
+  box-shadow:0 8px 22px rgba(0,0,0,.32);border-radius:8px;transform:rotate(-2deg)}
+#done{position:fixed;inset:0;background:rgba(255,255,255,.94);z-index:98;display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#done.on{display:flex}
+#done .mru{font-size:clamp(70px,20vw,190px);color:#d94b28;line-height:1}
+#done .tx{font-size:clamp(22px,4vw,46px);font-weight:700;color:#0f4f96;text-align:center;line-height:1.6}
+#done button{font:inherit;font-size:clamp(16px,2.4vw,24px);font-weight:700;padding:10px 24px;
+  border-radius:10px;border:2px solid #90aec7;background:#fff;color:#1a4470;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header id="bar">
+  <div class="steps">
+    <button class="st on" data-s="1">① なかま分け</button>
+    <button class="st" data-s="2">② つなぐ</button>
+    <button class="st" data-s="3">③ 名まえ</button>
+  </div>
+  <div class="tools">
+    <button id="btnColor">いろをつける</button>
+    <button id="btnMark" class="pri">さいてん</button>
+    <button id="btnReset">やりなおす</button>
+    <button id="btnTeach" class="tiny">先生用</button>
+  </div>
+</header>
+
+<main>
+  <!-- ステップ1 -->
+  <section id="s1" class="screen on">
+    <p class="lead">① カードを「お店のくふう」と「お客さんのねがい」に分けましょう。
+      <small>カードをタップしてから、入れる箱をタップします。ゆびでドラッグしてもできます。</small></p>
+    <div class="pool" id="pool1"></div>
+    <div class="boxes">
+      <div class="box k"><div class="bt">お店のくふう</div><div class="zone" data-zone="1:k"></div></div>
+      <div class="box n"><div class="bt">お客さんのねがい</div><div class="zone" data-zone="1:n"></div></div>
+    </div>
+  </section>
+
+  <!-- ステップ2 -->
+  <section id="s2" class="screen">
+    <p class="lead">② 「お客さんのねがい」を、こたえている「お店のくふう」のよこにおきましょう。</p>
+    <div class="pool small" id="pool2"></div>
+    <div class="tbl">
+      <div class="hdrow"><span class="hk">お店のくふう</span><span></span><span class="hn">お客さんのねがい</span></div>
+      <div id="rows2"></div>
+    </div>
+  </section>
+
+  <!-- ステップ3 -->
+  <section id="s3" class="screen">
+    <p class="lead">③ できた５つのまとまりに、名まえをつけましょう。</p>
+    <div class="pool small" id="pool3"></div>
+    <div class="tbl">
+      <div class="hdrow"><span class="hk">お店のくふう</span><span class="hc">つながり</span><span class="hn">お客さんのねがい</span></div>
+      <div id="rows3"></div>
+    </div>
+  </section>
+</main>
+
+<div id="msg"></div>
+<div id="ghost"></div>
+<div id="done">
+  <div class="mru">◎</div>
+  <div class="tx">かんけい図が かんせいしました！<br>お客さんのねがいと お店のくふうは、<br>うまく つながっているね。</div>
+  <button onclick="document.getElementById('done').classList.remove('on')">とじる</button>
+  <div style="font-size:12px;color:#8494a3;text-align:center;line-height:1.6">
+    小学校3年　社会「店ではたらく人と仕事」まとめる の学習用教材<br>
+    カードの文言は教科書のかんけい図をもとにしています（授業での利用のみ）
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============ データ（教科書65ページのかんけい図） ============ */
+var R = {
+  syouhin:'<ruby>商品<rt>しょうひん</rt></ruby>',
+  sanchi :'<ruby>産地<rt>さんち</rt></ruby>',
+  kakuchi:'<ruby>各地<rt>かくち</rt></ruby>',
+  sekai  :'<ruby>世界<rt>せかい</rt></ruby>'
+};
+var CARDS = [
+  {g:1,t:'k',x:'ねだんを見やすくする。'},
+  {g:1,t:'k',x:'お買いどく品をよういする。'},
+  {g:1,t:'n',x:'安く買いたい。'},
+
+  {g:2,t:'k',x:'小分けにして売る。'},
+  {g:2,t:'k',x:R.sekai+'の'+R.kakuchi+'から'+R.syouhin+'を取りよせる。'},
+  {g:2,t:'n',x:'ひつような分だけ買いたい。'},
+  {g:2,t:'n',x:'外国の'+R.syouhin+'を食べたい。'},
+
+  {g:3,t:'k',x:'新せんなものをよういする。'},
+  {g:3,t:'k',x:R.sanchi+'がわかるようにする。'},
+  {g:3,t:'n',x:'<ruby>消費期限<rt>しょうひきげん</rt></ruby>をたしかめたい。'},
+  {g:3,t:'n',x:'つくられた<ruby>場所<rt>ばしょ</rt></ruby>をたしかめたい。'},
+
+  {g:4,t:'k',x:'広い<ruby>駐車場<rt>ちゅうしゃじょう</rt></ruby>をつくる。'},
+  {g:4,t:'n',x:'<ruby>自動車<rt>じどうしゃ</rt></ruby>に乗って行きたい。'},
+
+  {g:5,t:'k',x:'リサイクルコーナーを<ruby>整<rt>ととの</rt></ruby>える。'},
+  {g:5,t:'k',x:'リサイクルでもポイントがたまる取り組みをする。'},
+  {g:5,t:'n',x:'ごみをへらしたい。'},
+  {g:5,t:'n',x:'ポイントをためたい。'}
+];
+CARDS.forEach(function(c,i){ c.id = i; });
+
+var LABELS = [
+  {g:1,x:'ねだん'},{g:2,x:'品ぞろえ'},{g:3,x:'新せんさ'},
+  {g:4,x:'べんりさ'},{g:5,x:'その他'}
+];
+var GNAME = ['','あ','い','う','え','お'];
+
+/* ============ 状態 ============ */
+var st = {1:{},2:{},3:{}};      // itemId -> zone key ('pool' ふくむ)
+var lk = {1:{},2:{},3:{}};      // itemId -> ロック済みか
+var colorOn = false;
+var step = 1;
+
+function initState(){
+  st={1:{},2:{},3:{}}; lk={1:{},2:{},3:{}}; colorOn=false;
+  CARDS.forEach(function(c){ st[1][c.id]='pool'; });
+  CARDS.filter(function(c){return c.t==='n';}).forEach(function(c){ st[2][c.id]='pool'; });
+  LABELS.forEach(function(l){ st[3][l.g]='pool'; });
+}
+
+/* ============ 骨組みをつくる ============ */
+function buildRows(){
+  var r2='',r3='';
+  for(var g=1;g<=5;g++){
+    var ks = CARDS.filter(function(c){return c.g===g && c.t==='k';});
+    var ns = CARDS.filter(function(c){return c.g===g && c.t==='n';});
+    var kh = ks.map(function(c){return cardHTML(c,'k',true);}).join('');
+    var nh = ns.map(function(c){return cardHTML(c,'n',true);}).join('');
+    r2 += '<div class="row"><div class="side">'+kh+'</div>'+
+          '<div class="arw">↔</div>'+
+          '<div class="zone" data-zone="2:g'+g+'"><span class="rowlab" style="background:none;color:#b3c1cd">'+GNAME[g]+'</span></div></div>';
+    r3 += '<div class="row"><div class="side">'+kh+'</div>'+
+          '<div class="zone" data-zone="3:g'+g+'"></div>'+
+          '<div class="side">'+nh+'</div></div>';
+  }
+  document.getElementById('rows2').innerHTML = r2;
+  document.getElementById('rows3').innerHTML = r3;
+}
+function cardHTML(c,type,fixed){
+  return '<div class="card '+type+' col'+(fixed?' lock':'')+'"'+(fixed?'':' data-item="?"')+'><span class="t">'+c.x+'</span></div>';
+}
+
+/* ============ 描画 ============ */
+function el(cls,html,item){
+  var d=document.createElement('div');
+  d.className=cls; d.innerHTML='<span class="t">'+html+'</span>';
+  if(item) d.setAttribute('data-item',item);
+  return d;
+}
+function render(){
+  // --- ステップ1 ---
+  var p1=document.getElementById('pool1');
+  var z1k=document.querySelector('[data-zone="1:k"]'), z1n=document.querySelector('[data-zone="1:n"]');
+  p1.innerHTML=''; z1k.innerHTML=''; z1n.innerHTML='';
+  CARDS.forEach(function(c){
+    var locked = lk[1][c.id];
+    var cls='card '+c.t+((colorOn||locked)?' col':'')+(locked?' lock':'');
+    var d=el(cls,c.x,'1:'+c.id);
+    var w = st[1][c.id];
+    (w==='pool'?p1:(w==='k'?z1k:z1n)).appendChild(d);
+  });
+
+  // --- ステップ2 ---
+  var p2=document.getElementById('pool2');
+  p2.innerHTML='';
+  for(var g=1;g<=5;g++){
+    var z=document.querySelector('[data-zone="2:g'+g+'"]');
+    z.innerHTML='<span class="rowlab" style="background:none;color:#c3ceda">'+GNAME[g]+'</span>';
+    z.classList.remove('ok');
+  }
+  CARDS.filter(function(c){return c.t==='n';}).forEach(function(c){
+    var locked=lk[2][c.id];
+    var d=el('card n col'+(locked?' lock':''),c.x,'2:'+c.id);
+    var w=st[2][c.id];
+    (w==='pool'?p2:document.querySelector('[data-zone="2:'+w+'"]')).appendChild(d);
+  });
+
+  // --- ステップ3 ---
+  var p3=document.getElementById('pool3');
+  p3.innerHTML='';
+  for(var g2=1;g2<=5;g2++){
+    var z3=document.querySelector('[data-zone="3:g'+g2+'"]');
+    z3.innerHTML=''; z3.classList.remove('ok');
+  }
+  LABELS.forEach(function(l){
+    var locked=lk[3][l.g];
+    var d=el('card chip'+(locked?' lock':''),l.x,'3:'+l.g);
+    var w=st[3][l.g];
+    (w==='pool'?p3:document.querySelector('[data-zone="3:'+w+'"]')).appendChild(d);
+  });
+
+  // ゾーンの完了表示
+  for(var g3=1;g3<=5;g3++){
+    var ns=CARDS.filter(function(c){return c.g===g3 && c.t==='n';});
+    if(ns.every(function(c){return lk[2][c.id];}))
+      document.querySelector('[data-zone="2:g'+g3+'"]').classList.add('ok');
+    if(lk[3][g3]) document.querySelector('[data-zone="3:g'+g3+'"]').classList.add('ok');
+  }
+  updateTabs();
+}
+function updateTabs(){
+  var d1=CARDS.every(function(c){return lk[1][c.id];});
+  var d2=CARDS.filter(function(c){return c.t==='n';}).every(function(c){return lk[2][c.id];});
+  var d3=LABELS.every(function(l){return lk[3][l.g];});
+  var ds=[0,d1,d2,d3];
+  [].forEach.call(document.querySelectorAll('#bar .st'),function(b){
+    var s=+b.dataset.s;
+    b.classList.toggle('on',s===step);
+    b.classList.toggle('done',ds[s]);
+  });
+}
+
+/* ============ 置く ============ */
+function itemOf(key){ var a=key.split(':'); return {s:+a[0], id:+a[1]}; }
+function place(itemKey, zoneKey){
+  var it=itemOf(itemKey);
+  if(lk[it.s][it.id]) return;
+  var w = zoneKey ? zoneKey.split(':')[1] : 'pool';
+  st[it.s][it.id]=w;
+  sel=null; render();
+}
+
+/* ============ 選択＋ドラッグ ============ */
+var sel=null, drag=null, ghost=document.getElementById('ghost');
+
+function clearSel(){ sel=null; [].forEach.call(document.querySelectorAll('.card.sel'),function(e){e.classList.remove('sel');}); }
+
+document.addEventListener('pointerdown', function(ev){
+  var c=ev.target.closest('.card[data-item]');
+  if(c && !c.classList.contains('lock')){
+    drag={el:c,key:c.dataset.item,x0:ev.clientX,y0:ev.clientY,moved:false};
+    return;
+  }
+  var z=ev.target.closest('.zone,.pool');
+  if(z && sel){
+    place(sel, z.dataset.zone||null);
+    return;
+  }
+  if(!c) clearSel();
+});
+
+document.addEventListener('pointermove', function(ev){
+  if(!drag) return;
+  if(!drag.moved){
+    if(Math.abs(ev.clientX-drag.x0)<7 && Math.abs(ev.clientY-drag.y0)<7) return;
+    drag.moved=true;
+    var r=drag.el.getBoundingClientRect();
+    ghost.innerHTML=drag.el.outerHTML;
+    var g=ghost.firstChild;
+    g.style.width=r.width+'px'; g.style.margin='0';
+    g.classList.remove('sel','dragging');
+    ghost.style.display='block';
+    drag.ox=ev.clientX-r.left; drag.oy=ev.clientY-r.top;
+    drag.el.classList.add('dragging');
+  }
+  ghost.style.left=(ev.clientX-drag.ox)+'px';
+  ghost.style.top =(ev.clientY-drag.oy)+'px';
+  var t=document.elementFromPoint(ev.clientX,ev.clientY);
+  [].forEach.call(document.querySelectorAll('.zone.hot'),function(e){e.classList.remove('hot');});
+  var z=t&&t.closest('.zone'); if(z) z.classList.add('hot');
+  ev.preventDefault();
+},{passive:false});
+
+document.addEventListener('pointerup', function(ev){
+  if(!drag) return;
+  var d=drag; drag=null;
+  ghost.style.display='none'; ghost.innerHTML='';
+  d.el.classList.remove('dragging');
+  [].forEach.call(document.querySelectorAll('.zone.hot'),function(e){e.classList.remove('hot');});
+  if(d.moved){
+    var t=document.elementFromPoint(ev.clientX,ev.clientY);
+    var z=t&&t.closest('.zone,.pool');
+    if(z) place(d.key, z.dataset.zone||null);
+  }else{
+    // タップ＝えらぶ／もどす
+    if(sel===d.key){ clearSel(); }
+    else if(d.el.closest('.zone')){ place(d.key,null); }
+    else { clearSel(); sel=d.key; d.el.classList.add('sel'); }
+  }
+});
+document.addEventListener('pointercancel', function(){
+  if(drag){ drag.el.classList.remove('dragging'); drag=null; ghost.style.display='none'; }
+});
+
+/* ============ さいてん ============ */
+function toast(txt,kind){
+  var m=document.getElementById('msg');
+  m.innerHTML=txt; m.className='on '+(kind||'');
+  clearTimeout(toast.t);
+  toast.t=setTimeout(function(){ m.className=''; },1900);
+}
+function mark(){
+  var ok=0, ng=0, total=0, bads=[];
+  if(step===1){
+    total=CARDS.length;
+    CARDS.forEach(function(c){
+      if(lk[1][c.id]){ ok++; return; }
+      var w=st[1][c.id]; if(w==='pool') return;
+      if(w===c.t){ lk[1][c.id]=true; ok++; }
+      else { st[1][c.id]='pool'; ng++; bads.push('1:'+c.id); }
+    });
+    if(ok===total) colorOn=true;
+  }else if(step===2){
+    var ns=CARDS.filter(function(c){return c.t==='n';}); total=ns.length;
+    ns.forEach(function(c){
+      if(lk[2][c.id]){ ok++; return; }
+      var w=st[2][c.id]; if(w==='pool') return;
+      if(w==='g'+c.g){ lk[2][c.id]=true; ok++; }
+      else { st[2][c.id]='pool'; ng++; bads.push('2:'+c.id); }
+    });
+  }else{
+    total=LABELS.length;
+    LABELS.forEach(function(l){
+      if(lk[3][l.g]){ ok++; return; }
+      var w=st[3][l.g]; if(w==='pool') return;
+      if(w==='g'+l.g){ lk[3][l.g]=true; ok++; }
+      else { st[3][l.g]='pool'; ng++; bads.push('3:'+l.g); }
+    });
+  }
+  render();
+  bads.forEach(function(k){
+    var e=document.querySelector('[data-item="'+k+'"]');
+    if(e) e.classList.add('bad');
+  });
+
+  if(ok===total){
+    if(step===3){ document.getElementById('done').classList.add('on'); }
+    else{
+      toast('ぜんぶ せいかい！<br>つぎは '+(step===1?'②　つなぐ':'③　名まえ')+' です。','good');
+      setTimeout(function(){ go(step+1); },1400);
+    }
+  }else if(ng>0){
+    toast('あと '+(total-ok)+' まい。<br>もどってきたカードを 見なおそう。','bad');
+  }else{
+    toast(ok+' / '+total+' まい せいかい！','good');
+  }
+}
+
+/* ============ 画面きりかえなど ============ */
+function go(n){
+  step=n;
+  [].forEach.call(document.querySelectorAll('.screen'),function(s,i){ s.classList.toggle('on',i===n-1); });
+  clearSel(); updateTabs();
+}
+[].forEach.call(document.querySelectorAll('#bar .st'),function(b){
+  b.addEventListener('click',function(){ go(+b.dataset.s); });
+});
+document.getElementById('btnMark').addEventListener('click',mark);
+document.getElementById('btnColor').addEventListener('click',function(){
+  colorOn=!colorOn; render();
+  toast(colorOn?'いろを つけました':'いろを けしました');
+});
+document.getElementById('btnReset').addEventListener('click',function(){
+  if(!confirm('さいしょから やりなおしますか？')) return;
+  initState(); go(1); render();
+});
+document.getElementById('btnTeach').addEventListener('click',function(){
+  if(!confirm('先生用：こたえを出しますか？')) return;
+  CARDS.forEach(function(c){ st[1][c.id]=c.t; lk[1][c.id]=true;
+    if(c.t==='n'){ st[2][c.id]='g'+c.g; lk[2][c.id]=true; } });
+  LABELS.forEach(function(l){ st[3][l.g]='g'+l.g; lk[3][l.g]=true; });
+  colorOn=true; render();
+});
+
+/* ============ 起動 ============ */
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+shuffle(CARDS);
+buildRows();
+initState();
+render();
+</script>
+</body>
+</html>
